@@ -47,7 +47,8 @@ int XGBRegisterLogCallback(void (*callback)(const char*)) {
 
 int XGDMatrixCreateFromFile(const char *fname,
                             int silent,
-                            DMatrixHandle *out) {
+                            DMatrixHandle *out,
+                            size_t page_size = 0) {
   API_BEGIN();
   bool load_row_split = false;
   if (rabit::IsDistributed()) {
@@ -55,7 +56,11 @@ int XGDMatrixCreateFromFile(const char *fname,
                  << "will split data among workers";
     load_row_split = true;
   }
-  *out = new std::shared_ptr<DMatrix>(DMatrix::Load(fname, silent != 0, load_row_split));
+  if (page_size == 0) {
+    page_size = DMatrix::kPageSize;
+  }
+
+  *out = new std::shared_ptr<DMatrix>(DMatrix::Load(fname, silent != 0, load_row_split, "auto", page_size));
   API_END();
 }
 

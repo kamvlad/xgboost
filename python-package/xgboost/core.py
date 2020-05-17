@@ -467,7 +467,8 @@ class DMatrix(object):
                  silent=False,
                  feature_names=None,
                  feature_types=None,
-                 nthread=None):
+                 nthread=None,
+                 page_size=None):
         """Parameters
         ----------
         data : os.PathLike/string/numpy.array/scipy.sparse/pd.DataFrame/
@@ -524,9 +525,12 @@ class DMatrix(object):
 
         if isinstance(data, (STRING_TYPES, os_PathLike)):
             handle = ctypes.c_void_p()
+            if page_size is None:
+                page_size = 0
             _check_call(_LIB.XGDMatrixCreateFromFile(c_str(os_fspath(data)),
                                                      ctypes.c_int(silent),
-                                                     ctypes.byref(handle)))
+                                                     ctypes.byref(handle),
+                                                     ctypes.c_size_t(page_size)))
             self.handle = handle
         elif isinstance(data, scipy.sparse.csr_matrix):
             self._init_from_csr(data)
